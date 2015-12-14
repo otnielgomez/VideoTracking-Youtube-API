@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Video</title>
+</head>
+<body style="background-color:black;">
+        <div id="player">Video</div>
+    <script>
+        var tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName("script")[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        var player;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player("player", {
+                height: "100%",
+                width: "100%",
+                videoId: "LLrnHpsWzsw",
+                events: {
+                    "onStateChange": onPlayerStateChange
+                }
+            });
+        }
+
+        function cleanTime() {
+            return Math.round(player.getCurrentTime());
+        };
+        var done = false;
+
+        function onPlayerStateChange(event) {
+            switch (event.data) {
+                case YT.PlayerState.PLAYING:
+                    if (cleanTime() == 0) {
+                        Ti.App.fireEvent("app:trackVideo", { eventAction: "Started", eventLabel: player.getVideoData().video_id });
+                    } else {
+                        Ti.App.fireEvent("app:trackVideo", { eventAction: "Played", eventLabel: "v: " + player.getVideoData().video_id + " | t: " + cleanTime() });
+                    };
+                    break;
+                case YT.PlayerState.PAUSED:
+                    if (player.getDuration() - player.getCurrentTime() != 0) {
+                        Ti.App.fireEvent("app:trackVideo", { eventAction: "Paused", eventLabel: "v: " + player.getVideoData().video_id + " | t: " + cleanTime() });
+                    };
+                    break;
+                case YT.PlayerState.ENDED:
+                    Ti.App.fireEvent("app:trackVideo", {eventAction: "Ended", eventLabel: player.getVideoData().video_id });
+                    break;
+            };
+        }
+    </script>
+</body>
+</html>
